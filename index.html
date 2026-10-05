@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#070a12">
+  <meta name="description" content="Sistema de estatísticas e organização de partidas de futebol entre amigos com times, posições, gols, assistências e ranking.">
+  <title>Fut de Domingo | Estatísticas & Partidas</title>
+
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS Principal (Azul Claro, Preto e Branco) -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Toast de Notificação / Gol -->
+  <div id="goal-toast" class="goal-celebration-toast">
+    <span>⚽</span>
+    <span id="goal-toast-text">GOL!</span>
+  </div>
+
+  <!-- Cabeçalho Principal -->
+  <header class="app-header">
+    <div class="app-container header-content">
+      <div class="brand" id="brand-home-btn">
+        <div class="brand-icon">⚽</div>
+        <div class="brand-text">
+          <h1>Fut de Domingo</h1>
+          <span>Painel de Estatísticas</span>
+        </div>
+      </div>
+
+      <!-- Navegação Desktop (6 Menus: Início, Jogadores, Times, Partidas, Estatísticas, Ranking) -->
+      <nav class="desktop-nav">
+        <button class="desktop-nav-btn active" data-tab="home">🏠 Início</button>
+        <button class="desktop-nav-btn" data-tab="players">👥 Jogadores</button>
+        <button class="desktop-nav-btn" data-tab="teams">⚽ Times</button>
+        <button class="desktop-nav-btn" data-tab="matches">🏟️ Partidas</button>
+        <button class="desktop-nav-btn" data-tab="stats">📊 Estatísticas</button>
+        <button class="desktop-nav-btn" data-tab="ranking">🏆 Ranking</button>
+      </nav>
+
+      <!-- Ações do Cabeçalho -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="btn-backup-modal" class="btn-icon" title="Backup e Dados" aria-label="Gerenciar Dados">
+          💾
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="app-container">
+
+    <!-- ====================================================================
+         1. ABA INÍCIO (DASHBOARD)
+         ==================================================================== -->
+    <section id="view-home" class="tab-view active">
+      <div class="hero-banner">
+        <div class="hero-badge">⚽ Sistema de Futebol Amador</div>
+        <h2 class="hero-title">Painel da Pelada</h2>
+        <p class="hero-desc">
+          Cadastre seus jogadores, monte e sorteie times equilibrados por posição, registre o placar das partidas com autores de gols e assistências, e acompanhe as estatísticas completas.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="switchTab('players')">
+            👥 Cadastrar Jogador
+          </button>
+          <button class="btn btn-secondary" onclick="switchTab('teams')">
+            ⚽ Criar & Sortear Times
+          </button>
+          <button class="btn btn-outline-blue" onclick="switchTab('matches')">
+            🏟️ Registrar Partida
+          </button>
+        </div>
+      </div>
+
+      <!-- Métricas Resumo -->
+      <div class="stats-grid-cards">
+        <div class="stat-metric-card" onclick="switchTab('players')" style="cursor: pointer;">
+          <div class="metric-icon-box">👥</div>
+          <div class="metric-details">
+            <span class="metric-label">Jogadores</span>
+            <span class="metric-value" id="home-count-players">0</span>
+          </div>
+        </div>
+        <div class="stat-metric-card" onclick="switchTab('teams')" style="cursor: pointer;">
+          <div class="metric-icon-box">⚽</div>
+          <div class="metric-details">
+            <span class="metric-label">Times Criados</span>
+            <span class="metric-value" id="home-count-teams">0</span>
+          </div>
+        </div>
+        <div class="stat-metric-card" onclick="switchTab('matches')" style="cursor: pointer;">
+          <div class="metric-icon-box">🏟️</div>
+          <div class="metric-details">
+            <span class="metric-label">Partidas</span>
+            <span class="metric-value" id="home-count-matches">0</span>
+          </div>
+        </div>
+        <div class="stat-metric-card" onclick="switchTab('stats')" style="cursor: pointer;">
+          <div class="metric-icon-box">🥅</div>
+          <div class="metric-details">
+            <span class="metric-label">Gols Registrados</span>
+            <span class="metric-value" id="home-count-goals">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumo / Destaques da Pelada -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="app-card" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-weight: 800; font-size: 0.85rem; color: var(--blue-light); text-transform: uppercase;">
+              ⚽ Artilheiro
+            </span>
+            <span>🏆</span>
+          </div>
+          <div id="home-top-scorer-box">
+            <!-- Renderizado dinamicamente via JS -->
+          </div>
+        </div>
+
+        <div class="app-card" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-weight: 800; font-size: 0.85rem; color: var(--blue-bright); text-transform: uppercase;">
+              🎯 Líder de Assistências
+            </span>
+            <span>👟</span>
+          </div>
+          <div id="home-top-assister-box">
+            <!-- Renderizado dinamicamente via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Últimas Partidas no Início -->
+      <div class="app-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 class="section-title" style="font-size: 1.2rem;">📜 Partidas Recentes</h3>
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('matches')">Ver Todas as Partidas</button>
+        </div>
+        <div id="home-recent-matches-list">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         2. ABA JOGADORES (CADASTRO, EDIÇÃO & LISTA)
+         ==================================================================== -->
+    <section id="view-players" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">👥 Jogadores</h2>
+          <p class="section-subtitle">Cadastre, edite ou exclua jogadores e visualize o desempenho individual</p>
+        </div>
+        <button class="btn btn-primary" id="btn-open-player-modal">
+          ➕ Adicionar Jogador
+        </button>
+      </div>
+
+      <!-- Barra de Pesquisa e Filtros -->
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <span>🔍</span>
+          <input type="text" id="player-search-input" class="search-input" placeholder="Buscar jogador por nome...">
+        </div>
+        <select id="player-position-filter" class="sort-select">
+          <option value="all">Todas as Posições</option>
+          <option value="Goleiro">Goleiros 🧤</option>
+          <option value="Zagueiro">Zagueiros / Defensores 🛡️</option>
+          <option value="Meia">Meias 👟</option>
+          <option value="Atacante">Atacantes ⚡</option>
+        </select>
+        <select id="player-sort-select" class="sort-select">
+          <option value="name">🔤 Nome (A-Z)</option>
+          <option value="goals">⚽ Mais Gols</option>
+          <option value="assists">🎯 Mais Assistências</option>
+          <option value="games">🏟️ Mais Jogos</option>
+        </select>
+      </div>
+
+      <!-- Grid de Cards de Jogadores -->
+      <div id="players-list-grid" class="players-grid">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         3. ABA TIMES (CRIAÇÃO, ESCALAÇÃO & SORTEIO POR POSIÇÕES)
+         ==================================================================== -->
+    <section id="view-teams" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">⚽ Times</h2>
+          <p class="section-subtitle">Crie times manualmente, distribua jogadores ou faça o sorteio equilibrado por posição</p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="btn-open-team-modal">
+            ➕ Criar Time
+          </button>
+          <button class="btn btn-secondary" id="btn-shuffle-teams-positions" title="Equilibra goleiros, defensores, meias e atacantes">
+            🎲 Sorteio por Posições
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-clear-all-teams">
+            🔄 Desescalar Todos
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid de Times -->
+      <div id="teams-grid-container" class="teams-grid">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+
+      <!-- Banco de Jogadores Não Escalados -->
+      <div class="bench-section">
+        <div class="bench-header">
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-white);">
+              🪑 Jogadores Disponíveis (<span id="bench-players-count">0</span>)
+            </h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">
+              Clique no botão do time para escalar o jogador
+            </span>
+          </div>
+        </div>
+        <div id="bench-players-list" class="bench-players-grid">
+          <!-- Chips renderizados via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         4. ABA PARTIDAS (CRIAR PARTIDA, GOLS & HISTÓRICO)
+         ==================================================================== -->
+    <section id="view-matches" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">🏟️ Partidas</h2>
+          <p class="section-subtitle">Crie novas partidas, registre o placar, adicione gols e assistências</p>
+        </div>
+        <button class="btn btn-primary" id="btn-open-new-match-modal">
+          ➕ Nova Partida
+        </button>
+      </div>
+
+      <!-- Placar Ativo / Partida em Andamento -->
+      <div id="active-match-container">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+
+      <!-- Histórico de Partidas Realizadas -->
+      <div class="app-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-white);">
+            📜 Histórico de Partidas
+          </h3>
+          <span id="history-matches-badge" style="font-size: 0.82rem; color: var(--text-muted);">
+            0 partidas registradas
+          </span>
+        </div>
+        <div id="matches-history-list" class="history-cards-list">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         5. ABA ESTATÍSTICAS
+         ==================================================================== -->
+    <section id="view-stats" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">📊 Estatísticas Detalhadas</h2>
+          <p class="section-subtitle">Visão completa dos jogos, gols, assistências e médias de cada jogador</p>
+        </div>
+      </div>
+
+      <!-- Barra de Filtro de Estatísticas -->
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <span>🔍</span>
+          <input type="text" id="stats-search-input" class="search-input" placeholder="Filtrar por jogador...">
+        </div>
+        <select id="stats-pos-filter" class="sort-select">
+          <option value="all">Todas as Posições</option>
+          <option value="Goleiro">Goleiros</option>
+          <option value="Zagueiro">Zagueiros / Defensores</option>
+          <option value="Meia">Meias</option>
+          <option value="Atacante">Atacantes</option>
+        </select>
+      </div>
+
+      <div class="app-card" style="padding: 12px 16px; overflow-x: auto;">
+        <div id="stats-table-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         6. ABA RANKING
+         ==================================================================== -->
+    <section id="view-ranking" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">🏆 Ranking da Galera</h2>
+          <p class="section-subtitle">Classificação automática calculada a partir dos dados das partidas</p>
+        </div>
+      </div>
+
+      <!-- Abas de Filtros do Ranking -->
+      <div class="ranking-tabs">
+        <button class="ranking-tab-btn active" data-rank="overall">
+          🏆 Geral (Pontuação)
+        </button>
+        <button class="ranking-tab-btn" data-rank="goals">
+          ⚽ Artilheiros (Gols)
+        </button>
+        <button class="ranking-tab-btn" data-rank="assists">
+          🎯 Garçons (Assistências)
+        </button>
+        <button class="ranking-tab-btn" data-rank="games">
+          🏟️ Presença (Jogos)
+        </button>
+      </div>
+
+      <!-- Pódio Visual (Top 3) -->
+      <div id="ranking-podium-area" class="podium-container">
+        <!-- Renderizado dinamicamente via JS quando houver jogadores com dados -->
+      </div>
+
+      <!-- Tabela Completa do Ranking -->
+      <div class="app-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-white);" id="ranking-table-title">
+            Classificação Geral
+          </h3>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">
+            Critério: Gol (3 pts) • Assistência (2 pts) • Jogo (1 pt)
+          </span>
+        </div>
+        <div id="ranking-leaderboard-list" class="leaderboard-list">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       BARRA DE NAVEGAÇÃO MOBILE (6 ABAS FIXAS EMBAIXO)
+       ==================================================================== -->
+  <nav class="mobile-nav">
+    <button class="nav-tab-btn active" data-tab="home">
+      <span class="tab-icon">🏠</span>
+      <span>Início</span>
+    </button>
+    <button class="nav-tab-btn" data-tab="players">
+      <span class="tab-icon">👥</span>
+      <span>Jogadores</span>
+    </button>
+    <button class="nav-tab-btn" data-tab="teams">
+      <span class="tab-icon">⚽</span>
+      <span>Times</span>
+    </button>
+    <button class="nav-tab-btn" data-tab="matches">
+      <span class="tab-icon">🏟️</span>
+      <span>Partidas</span>
+    </button>
+    <button class="nav-tab-btn" data-tab="stats">
+      <span class="tab-icon">📊</span>
+      <span>Stats</span>
+    </button>
+    <button class="nav-tab-btn" data-tab="ranking">
+      <span class="tab-icon">🏆</span>
+      <span>Ranking</span>
+    </button>
+  </nav>
+
+  <!-- ====================================================================
+       MODAIS (POPUPS)
+       ==================================================================== -->
+
+  <!-- Modal: Adicionar / Editar Jogador -->
+  <div id="modal-player" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-player-title">➕ Adicionar Jogador</h3>
+        <button class="modal-close-btn" data-close="modal-player">&times;</button>
+      </div>
+      <form id="form-player">
+        <input type="hidden" id="input-player-id">
+        <div class="form-group">
+          <label class="form-label" for="input-player-name">Nome do Jogador *</label>
+          <input type="text" id="input-player-name" class="form-input" placeholder="Digite o nome ou apelido" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-player-pos">Posição Principal *</label>
+          <select id="input-player-pos" class="form-select" required>
+            <option value="Linha">Linha (Geral)</option>
+            <option value="Goleiro">Goleiro 🧤</option>
+            <option value="Zagueiro">Zagueiro / Defensor 🛡️</option>
+            <option value="Meia">Meia 👟</option>
+            <option value="Atacante">Atacante ⚡</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <div class="form-group">
+            <label class="form-label" for="input-player-games">🏟️ Jogos</label>
+            <input type="number" id="input-player-games" class="form-input" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-player-goals">⚽ Gols</label>
+            <input type="number" id="input-player-goals" class="form-input" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-player-assists">🎯 Assist.</label>
+            <input type="number" id="input-player-assists" class="form-input" min="0" value="0">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-player">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Jogador</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Criar / Editar Time -->
+  <div id="modal-team" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-team-title">⚽ Criar Novo Time</h3>
+        <button class="modal-close-btn" data-close="modal-team">&times;</button>
+      </div>
+      <form id="form-team">
+        <input type="hidden" id="input-team-id">
+        <div class="form-group">
+          <label class="form-label" for="input-team-name">Nome do Time *</label>
+          <input type="text" id="input-team-name" class="form-input" placeholder="Ex: Time Azul, Time Branco, Sem Colete" required autocomplete="off">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-team">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Time</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Criar Nova Partida -->
+  <div id="modal-match-create" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🏟️ Criar Nova Partida</h3>
+        <button class="modal-close-btn" data-close="modal-match-create">&times;</button>
+      </div>
+      <form id="form-create-match">
+        <div class="form-group">
+          <label class="form-label" for="select-match-team-a">Time 1 (Mandante) *</label>
+          <select id="select-match-team-a" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="select-match-team-b">Time 2 (Visitante) *</label>
+          <select id="select-match-team-b" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-match-date">Data da Partida</label>
+          <input type="date" id="input-match-date" class="form-input">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-match-create">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Iniciar Partida</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Registrar Gol na Partida -->
+  <div id="modal-goal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>⚽</span> Registrar Gol (<span id="modal-goal-team-label">Time</span>)
+        </h3>
+        <button class="modal-close-btn" data-close="modal-goal">&times;</button>
+      </div>
+      <form id="form-goal">
+        <input type="hidden" id="goal-team-target">
+
+        <div class="form-group">
+          <label class="form-label" for="goal-scorer-select">⚽ Autor do Gol *</label>
+          <select id="goal-scorer-select" class="form-select" required></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-assist-select">🎯 Quem deu a Assistência?</label>
+          <select id="goal-assist-select" class="form-select">
+            <option value="">Ninguém (Gol individual / Pênalti / Rebote)</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-goal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Confirmar Gol ⚽</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Editar Placar Manual da Partida -->
+  <div id="modal-edit-score" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Ajustar Placar Manual</h3>
+        <button class="modal-close-btn" data-close="modal-edit-score">&times;</button>
+      </div>
+      <form id="form-edit-score">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; text-align: center;">
+          <div class="form-group">
+            <label class="form-label" id="label-score-team-a">Time 1</label>
+            <input type="number" id="input-score-team-a" class="form-input" min="0" style="font-size: 1.5rem; text-align: center; font-weight: 800;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="label-score-team-b">Time 2</label>
+            <input type="number" id="input-score-team-b" class="form-input" min="0" style="font-size: 1.5rem; text-align: center; font-weight: 800;">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-edit-score">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Placar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Backup e Dados -->
+  <div id="modal-backup" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">💾 Dados & Armazenamento</h3>
+        <button class="modal-close-btn" data-close="modal-backup">&times;</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <p style="font-size: 0.88rem; color: var(--text-muted);">
+          Todos os dados cadastrados são salvos automaticamente no localStorage do seu navegador.
+        </p>
+
+        <button class="btn btn-secondary" id="btn-export-json">
+          📥 Fazer Download do Backup (JSON)
+        </button>
+
+        <label class="btn btn-secondary" style="margin: 0; cursor: pointer;">
+          📤 Restaurar Backup de Arquivo (JSON)
+          <input type="file" id="input-import-json" accept=".json" style="display: none;">
+        </label>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 6px 0;">
+
+        <button class="btn btn-danger" id="btn-wipe-data">
+          ⚠️ Apagar Todos os Dados e Reiniciar Vazio
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" data-close="modal-backup">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Principal -->
+  <script src="js/app.js"></script>
+</body>
+</html>
